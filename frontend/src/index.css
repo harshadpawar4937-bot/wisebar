@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color: #141816; background: #fbf8f2; }
+html { scroll-behavior: smooth; }
+body { margin: 0; min-height: 100vh; overflow-x: clip; }
+::selection { background: #d6f25c; color: #071610; }
+:focus-visible { outline: 2px solid #1a5240; outline-offset: 3px; }
+.skip-link {
+  position: absolute; left: 1rem; top: -4rem; z-index: 80;
+  background: #d6f25c; color: #071610; padding: 0.6rem 1rem; border-radius: 999px;
+}
+.skip-link:focus { top: 1rem; }
+
+.ticker-track { display: flex; width: max-content; animation: ticker 36s linear infinite; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track { animation: none; }
+  html { scroll-behavior: auto; }
+}
+
+.spec { font-family: "Space Grotesk", sans-serif; letter-spacing: 0.16em; text-transform: uppercase; font-size: 0.68rem; }
+.hero-mesh {
+  background:
+    radial-gradient(520px 320px at 12% 18%, rgba(214, 242, 92, 0.55), transparent 70%),
+    radial-gradient(480px 280px at 88% 0%, rgba(224, 160, 69, 0.35), transparent 65%),
+    #f6f0e4;
+}
+.float-y { animation: floaty 5.5s ease-in-out infinite; }
+.float-y-delay { animation: floaty 6.5s ease-in-out 0.6s infinite; }
+@keyframes floaty {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-14px) rotate(2deg); }
+}
+.shelf-card { transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
+.shelf-card:hover { transform: translateY(-10px) rotate(-1.5deg); }
+@media (prefers-reduced-motion: reduce) {
+  .float-y, .float-y-delay { animation: none; }
+  .shelf-card, .shelf-card:hover { transform: none; }
+}
