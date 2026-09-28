@@ -5,4 +5,4 @@ dependencies = [ "fastapi==0.115.6", "uvicorn==0.34.0", "sqlalchemy==2.0.36", "p
 requires-python = ">=3.12"
 
 [tool.vercel]
-entrypoint = "server:app"
+entrypoint = "app.main:app"
