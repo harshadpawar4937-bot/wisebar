@@ -5,9 +5,13 @@ from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+def _on_vercel() -> bool:
+    return any(os.environ.get(key) for key in ("VERCEL", "VERCEL_ENV", "VERCEL_URL"))
+
+
 def _database_url() -> str:
     # Vercel’s app filesystem is read-only. /tmp is the writable location.
-    if os.environ.get("VERCEL"):
+    if _on_vercel():
         return "sqlite:////tmp/wisebar.db"
     return "sqlite:///./wisebar.db"
 

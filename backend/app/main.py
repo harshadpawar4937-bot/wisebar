@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from contextlib import asynccontextmanager
-
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -11,30 +9,28 @@ from app.routers import account, admin, catalog, commerce
 from app.seed import seed
 
 _ready = False
+startup_error = ""
 
 
 def prepare_database() -> None:
-    global _ready
-    if _ready:
+    global _ready, startup_error
+    if _ready or startup_error:
         return
-    Base.metadata.create_all(bind=engine)
-    db = SessionLocal()
     try:
-        seed(db)
-    finally:
-        db.close()
-    _ready = True
-
-
-@asynccontextmanager
-async def lifespan(_: FastAPI):
-    prepare_database()
-    yield
+        Base.metadata.create_all(bind=engine)
+        db = SessionLocal()
+        try:
+            seed(db)
+        finally:
+            db.close()
+        _ready = True
+    except Exception as exc:
+        startup_error = str(exc)
 
 
 def create_app() -> FastAPI:
     settings = get_settings()
-    app = FastAPI(title="WISEBAR API", version="1.0.0", lifespan=lifespan)
+    app = FastAPI(title="WISEBAR API", version="1.0.0")
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.origins,
@@ -62,6 +58,9 @@ def create_app() -> FastAPI:
 
     @app.get("/api/health")
     def health():
+        prepare_database()
+        if startup_error:
+            return {"ok": False, "service": "wisebar", "error": startup_error}
         return {"ok": True, "service": "wisebar"}
 
     return app
