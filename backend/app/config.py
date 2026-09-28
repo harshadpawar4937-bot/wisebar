@@ -1,13 +1,21 @@
 from __future__ import annotations
 
+import os
 from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def _database_url() -> str:
+    # Vercel’s app filesystem is read-only. /tmp is the writable location.
+    if os.environ.get("VERCEL"):
+        return "sqlite:////tmp/wisebar.db"
+    return "sqlite:///./wisebar.db"
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    database_url: str = "sqlite:///./wisebar.db"
+    database_url: str = _database_url()
     secret_key: str = "dev-only-change-me"
     debug: bool = True
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"

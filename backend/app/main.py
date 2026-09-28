@@ -10,15 +10,25 @@ from app.database import Base, SessionLocal, engine
 from app.routers import account, admin, catalog, commerce
 from app.seed import seed
 
+_ready = False
 
-@asynccontextmanager
-async def lifespan(_: FastAPI):
+
+def prepare_database() -> None:
+    global _ready
+    if _ready:
+        return
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
         seed(db)
     finally:
         db.close()
+    _ready = True
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    prepare_database()
     yield
 
 
@@ -35,6 +45,7 @@ def create_app() -> FastAPI:
 
     @app.middleware("http")
     async def security_headers(request: Request, call_next):
+        prepare_database()
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
