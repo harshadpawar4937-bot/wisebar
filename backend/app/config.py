@@ -17,11 +17,11 @@ def _database_url() -> str:
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore", env_ignore_empty=True)
 
     database_url: str = _database_url()
     secret_key: str = "dev-only-change-me"
-    debug: bool = True
+    debug: bool = not _on_vercel()
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
     admin_email: str = "admin@wisebar.example"
     admin_password: str = "change-me-now"
