@@ -15,9 +15,9 @@ def _on_vercel() -> bool:
 
 
 def _engine_url(url: str) -> str:
-    url = (url or "").strip()
-    if _on_vercel() and (not url or url.startswith("sqlite")):
+    if _on_vercel():
         return "sqlite:////tmp/wisebar.db"
+    url = (url or "").strip()
     if url.startswith("postgres://"):
         url = "postgresql://" + url[len("postgres://") :]
     if url.startswith("postgresql://"):
@@ -25,12 +25,17 @@ def _engine_url(url: str) -> str:
     return url or "sqlite:///./wisebar.db"
 
 
-settings = get_settings()
-database_url = _engine_url(settings.database_url)
-if database_url.startswith("sqlite"):
-    engine = create_engine(database_url, connect_args={"check_same_thread": False}, poolclass=StaticPool)
-else:
-    engine = create_engine(database_url, pool_pre_ping=True, poolclass=NullPool)
+def _build_engine():
+    url = _engine_url(get_settings().database_url)
+    try:
+        if url.startswith("sqlite"):
+            return create_engine(url, connect_args={"check_same_thread": False}, poolclass=StaticPool)
+        return create_engine(url, pool_pre_ping=True, poolclass=NullPool)
+    except Exception:
+        return create_engine("sqlite:////tmp/wisebar.db", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+
+
+engine = _build_engine()
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 
